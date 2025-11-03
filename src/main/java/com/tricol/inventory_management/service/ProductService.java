@@ -5,6 +5,7 @@ import com.tricol.inventory_management.exception.DuplicateResourceException;
 import com.tricol.inventory_management.exception.ResourceNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
 import com.tricol.inventory_management.dto.request.create.ProductCreateRequestDTO;
+import com.tricol.inventory_management.dto.request.update.ProductUpdateRequestDTO;
 import com.tricol.inventory_management.dto.response.ProductResponseDTO;
 import com.tricol.inventory_management.mapper.ProductMapper;
 import com.tricol.inventory_management.model.Product;
@@ -51,11 +52,49 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public List<ProductResponseDTO> findAllProducts(){
-        List<ProductResponseDTO> products = productRepository.findAll()
+        // as always, find all gives us a response, so  we go from entity to dto
+        return productRepository.findAll()
                 .stream()
-                .map(productMapper::toDTO).toList();
+                .map(productMapper::toDTO)
+                .toList();
+    }
 
-        return products;
+    @Transactional(readOnly = true)
+    public ProductResponseDTO findByReference(String reference) {
+        Product product = productRepository.findByReference(reference)
+                .orElseThrow(() -> new ResourceNotFoundException("Product with reference '" + reference + "' not found"));
+        return productMapper.toDTO(product);
+    }
+
+    @Transactional
+    public ProductResponseDTO updateProduct(Long id, ProductUpdateRequestDTO dto) {
+        Product existing = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product with id " + id + " does not exist"));
+
+        // if reference changed, ensure uniqueness
+        if (!existing.getReference().equals(dto.getReference())) {
+            Optional<Product> byRef = productRepository.findByReference(dto.getReference());
+            if (byRef.isPresent() && !byRef.get().getId().equals(id)) {
+                throw new DuplicateResourceException("Product with reference " + dto.getReference() + " already exists");
+            }
+        }
+
+        // update entity using MapStruct update method
+        productMapper.updateEntity(dto, existing);
+
+        try {
+            Product saved = productRepository.save(existing);
+            return productMapper.toDTO(saved);
+        } catch (DataIntegrityViolationException e) {
+            throw new DuplicateResourceException("Product with reference " + dto.getReference() + " already exists", e);
+        }
+    }
+
+    @Transactional
+    public void deleteProduct(Long id) {
+        Product existing = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product with id " + id + " does not exist"));
+        productRepository.delete(existing);
     }
 
 
