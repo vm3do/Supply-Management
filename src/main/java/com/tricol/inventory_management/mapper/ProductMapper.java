@@ -10,7 +10,7 @@ import org.mapstruct.MappingTarget;
 @Mapper(componentModel = "spring")
 public interface ProductMapper {
 
-    //reponse -> entity to dto
+    //response -> entity to dto
     ProductResponseDTO toDTO(Product product);
 
     //request -> dto to entity
