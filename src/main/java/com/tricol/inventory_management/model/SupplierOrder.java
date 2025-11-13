@@ -47,12 +47,12 @@ public class SupplierOrder {
     }
 
     public void calculateTotalAmount() {
-        if (items != null && !items.isEmpty()) {
-            this.totalAmount = items.stream()
-                    .map(SupplierOrderItem::getTotalAmount)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-        } else {
-            this.totalAmount = BigDecimal.ZERO;
+        BigDecimal total = BigDecimal.ZERO;
+        for (SupplierOrderItem item : this.items) {
+            if (item.getTotalAmount() != null) {
+                total = total.add(item.getTotalAmount());
+            }
         }
+        this.totalAmount = total;
     }
 }

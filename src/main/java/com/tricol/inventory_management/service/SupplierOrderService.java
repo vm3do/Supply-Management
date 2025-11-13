@@ -32,6 +32,7 @@ public class SupplierOrderService {
     private final ProductRepository productRepository;
     private final SupplierOrderMapper supplierOrderMapper;
 
+
     public SupplierOrderResponseDTO createOrder(SupplierOrderRequestDTO createDTO) {
 
         Supplier supplier = supplierRepository
@@ -39,10 +40,14 @@ public class SupplierOrderService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Supplier not found with ID: " + createDTO.getSupplierId()));
 
-        SupplierOrder order = supplierOrderMapper.toEntity(createDTO);
-        order.setSupplier(supplier);
 
-        // Build order items
+        SupplierOrder order = SupplierOrder.builder()
+                .supplier(supplier)
+                .orderDate(createDTO.getOrderDate())
+                .status(OrderStatus.PENDING)
+                .items(new ArrayList<>())
+                .build();
+
         for (SupplierOrderItemRequestDTO itemDTO : createDTO.getItems()) {
             Product product = productRepository
                     .findById(itemDTO.getProductId())
@@ -59,8 +64,6 @@ public class SupplierOrderService {
             item.calculateTotalAmount();
             order.addItem(item);
         }
-
-        order.setStatus(OrderStatus.PENDING);
 
         order.calculateTotalAmount();
 

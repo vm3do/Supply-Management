@@ -28,7 +28,7 @@ public class SupplierOrderItem {
     private Product product;
 
     @Column(nullable = false)
-    private Big quantity;
+    private int quantity;
 
     @Column(name = "unit_price", nullable = false)
     private BigDecimal unitPrice;
@@ -37,6 +37,6 @@ public class SupplierOrderItem {
     private BigDecimal totalAmount;
 
     public void calculateTotalAmount() {
-        this.totalAmout = this.quantity.multiply(this.unitPrice);
+        this.totalAmount = this.unitPrice.multiply(BigDecimal.valueOf(this.quantity));
     }
 }
