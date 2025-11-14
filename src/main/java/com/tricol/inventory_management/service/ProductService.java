@@ -16,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -31,12 +30,13 @@ public class ProductService {
             throw new DuplicateResourceException("Product with reference " + requestDTO.getReference() + " already exists");
         }
 
-        // map request DTO to entity and persist
+        // we received the request which is a dto, and to save to db, we have to make it an entity
         Product product = productMapper.toEntity(requestDTO);
         try {
             Product savedProduct = productRepository.save(product);
+        //  convert saved entity to dto and return it as a response
+            return productMapper.toDTO(savedProduct);
         } catch (DataIntegrityViolationException e) {
-            // translate DB unique constraint violation (race condition) to domain exception
             throw new DuplicateResourceException("Product with reference " + requestDTO.getReference() + " already exists", e);
         }
     }
@@ -64,12 +64,10 @@ public class ProductService {
         return productMapper.toDTO(product);
     }
 
-    @Transactional
     public ProductResponseDTO updateProduct(Long id, ProductUpdateRequestDTO dto) {
         Product existing = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product with id " + id + " does not exist"));
 
-        // if reference changed, ensure uniqueness
         if (!existing.getReference().equals(dto.getReference())) {
             Optional<Product> byRef = productRepository.findByReference(dto.getReference());
             if (byRef.isPresent() && !byRef.get().getId().equals(id)) {
@@ -77,7 +75,6 @@ public class ProductService {
             }
         }
 
-        // update entity using MapStruct update method
         productMapper.updateEntity(dto, existing);
 
         try {
@@ -88,7 +85,6 @@ public class ProductService {
         }
     }
 
-    @Transactional
     public void deleteProduct(Long id) {
         Product existing = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product with id " + id + " does not exist"));

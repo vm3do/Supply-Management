@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/supplier-orders")
+@RequestMapping("/api/supplier-orders")
 public class SupplierOrderController {
 
     private final SupplierOrderService supplierOrderService;
@@ -32,7 +32,7 @@ public class SupplierOrderController {
     }
 
     @PostMapping
-    public ResponseEntity<SupplierOrderResponseDTO> createOrder(@Valid @RequestBody SupplierOrderRequestDTO request){
+    public ResponseEntity<SupplierOrderResponseDTO> createOrder(@RequestBody SupplierOrderRequestDTO request){
         return ResponseEntity.status(HttpStatus.CREATED).body(supplierOrderService.createOrder(request));
     }
 
@@ -41,7 +41,12 @@ public class SupplierOrderController {
         return ResponseEntity.ok(supplierOrderService.updateOrder(id, request));
     }
 
-    @PutMapping("/{id}/reception")
+    @PutMapping("/{id}/validate")
+    public ResponseEntity<SupplierOrderResponseDTO> validateOrder(@PathVariable Long id) {
+        return ResponseEntity.ok(supplierOrderService.validateOrder(id));
+    }
+
+    @PutMapping("/{id}/receive")
     public ResponseEntity<SupplierOrderResponseDTO> receiveOrder(@PathVariable Long id) {
         return ResponseEntity.ok(supplierOrderService.receiveOrder(id));
     }

@@ -32,4 +32,11 @@ public class SupplierOrderItem {
 
     @Column(name = "unit_price", nullable = false)
     private BigDecimal unitPrice;
+
+    @Column(name = "total_amount", nullable = false)
+    private BigDecimal totalAmount;
+
+    public void calculateTotalAmount() {
+        this.totalAmount = this.unitPrice.multiply(BigDecimal.valueOf(this.quantity));
+    }
 }

@@ -11,9 +11,9 @@ import com.tricol.inventory_management.model.SupplierOrderItem;
 import com.tricol.inventory_management.repository.ProductRepository;
 import com.tricol.inventory_management.repository.SupplierOrderItemRepository;
 import com.tricol.inventory_management.repository.SupplierOrderRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -54,14 +54,12 @@ public class SupplierOrderItemService {
         supplierOrderItemRepository.delete(existing);
     }
 
-    @Transactional(Transactional.TxType.SUPPORTS)
     public SupplierOrderItemResponseDTO getItemById(Long id) {
         SupplierOrderItem item = supplierOrderItemRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Item with id " + id + " not found"));
         return supplierOrderItemMapper.toDTO(item);
     }
 
-    @Transactional(Transactional.TxType.SUPPORTS)
     public List<SupplierOrderItemResponseDTO> getItemsByOrder(Long orderId) {
         if (!supplierOrderRepository.existsById(orderId)) {
             throw new ResourceNotFoundException("Order with id " + orderId + " not found");

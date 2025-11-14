@@ -1,6 +1,7 @@
 package com.tricol.inventory_management.model;
 
 
+import com.tricol.inventory_management.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,6 +10,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -27,7 +29,8 @@ public class SupplierOrder {
     private Supplier supplier;
 
     @OneToMany(mappedBy = "supplierOrder", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<SupplierOrderItem> items;
+    @Builder.Default
+    private List<SupplierOrderItem> items = new ArrayList<>();
 
     @Column(name = "order_date", nullable = false)
     private LocalDate orderDate;
@@ -35,6 +38,21 @@ public class SupplierOrder {
     @Column(name = "total_amount", nullable = false)
     private BigDecimal totalAmount;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String status;
+    private OrderStatus status;
+
+    public void addItem(SupplierOrderItem item) {
+        items.add(item);
+    }
+
+    public void calculateTotalAmount() {
+        BigDecimal total = BigDecimal.ZERO;
+        for (SupplierOrderItem item : this.items) {
+            if (item.getTotalAmount() != null) {
+                total = total.add(item.getTotalAmount());
+            }
+        }
+        this.totalAmount = total;
+    }
 }

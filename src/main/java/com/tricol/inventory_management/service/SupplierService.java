@@ -60,7 +60,6 @@ public class SupplierService {
         return supplierMapper.toDTO(s);
     }
 
-    @Transactional
     public SupplierResponseDTO updateSupplier(Long id, SupplierUpdateRequestDTO dto) {
         Supplier existing = supplierRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Supplier with id " + id + " does not exist"));
@@ -82,7 +81,6 @@ public class SupplierService {
         }
     }
 
-    @Transactional
     public void deleteSupplier(Long id) {
         Supplier existing = supplierRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Supplier with id " + id + " does not exist"));
