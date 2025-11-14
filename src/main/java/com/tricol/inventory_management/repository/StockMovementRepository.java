@@ -14,8 +14,8 @@ public interface StockMovementRepository extends JpaRepository<StockMovement, Lo
 
     List<StockMovement> findByProductOrderByMovementDateDesc(Product product);
 
-
     List<StockMovement> findAllByOrderByMovementDateDesc();
+
 }
 
 

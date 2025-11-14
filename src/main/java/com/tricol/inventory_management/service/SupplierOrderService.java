@@ -75,7 +75,6 @@ public class SupplierOrderService {
 
 
 
-    @Transactional(Transactional.TxType.SUPPORTS)
     public SupplierOrderResponseDTO getOrderById(Long id) {
         SupplierOrder order = supplierOrderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order with id " + id + " does not exist"));
@@ -83,7 +82,6 @@ public class SupplierOrderService {
     }
 
 
-    @Transactional(Transactional.TxType.SUPPORTS)
     public List<SupplierOrderResponseDTO> getAllOrders() {
         return supplierOrderRepository.findAll()
                 .stream()
@@ -92,53 +90,41 @@ public class SupplierOrderService {
     }
 
 
-//    public SupplierOrderResponseDTO updateOrder(Long id, SupplierOrderUpdateDTO dto) {
-//        SupplierOrder existing = supplierOrderRepository.findById(id)
-//                .orElseThrow(() -> new ResourceNotFoundException("Order with id " + id + " does not exist"));
-//
-//        supplierOrderMapper.updateEntity(dto, existing);
-//
-//        SupplierOrder saved = supplierOrderRepository.save(existing);
-//        return supplierOrderMapper.toDTO(saved);
-//    }
-public SupplierOrderResponseDTO updateOrder(Long id, SupplierOrderUpdateDTO dto) {
-    SupplierOrder existing = supplierOrderRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Order with id " + id + " does not exist"));
+    public SupplierOrderResponseDTO updateOrder(Long id, SupplierOrderUpdateDTO dto) {
+        SupplierOrder existing = supplierOrderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Order with id " + id + " does not exist"));
 
-    // Update basic fields only if provided (non-null)
-    if (dto.getOrderDate() != null) {
-        existing.setOrderDate(dto.getOrderDate());
-    }
-
-    if (dto.getStatus() != null) {
-        existing.setStatus(OrderStatus.valueOf(dto.getStatus().toUpperCase()));
-    }
-
-    // Update items if provided
-    if (dto.getItems() != null && !dto.getItems().isEmpty()) {
-        // Clear existing items and add updated ones
-        existing.getItems().clear();
-
-        for (SupplierOrderItemRequestDTO itemDTO : dto.getItems()) {
-            Product product = productRepository.findById(itemDTO.getProductId()).orElseThrow(() -> new ResourceNotFoundException("Product not found with ID: " + itemDTO.getProductId()));
-            SupplierOrderItem item = SupplierOrderItem
-                    .builder()
-                    .supplierOrder(existing)
-                    .unitPrice(itemDTO.getUnitPrice())
-                    .quantity(itemDTO.getQuantity())
-                    .product(product)
-                    .build();
-            item.calculateTotalAmount();
-            existing.addItem(item);
+        if (dto.getOrderDate() != null) {
+            existing.setOrderDate(dto.getOrderDate());
         }
 
-        // Recalculate total amount after items update
-        existing.calculateTotalAmount();
-    }
+        if (dto.getStatus() != null) {
+            existing.setStatus(OrderStatus.valueOf(dto.getStatus().toUpperCase()));
+        }
 
-    SupplierOrder saved = supplierOrderRepository.save(existing);
-    return supplierOrderMapper.toDTO(saved);
-}
+        if (dto.getItems() != null && !dto.getItems().isEmpty()) {
+
+            existing.getItems().clear();
+
+            for (SupplierOrderItemRequestDTO itemDTO : dto.getItems()) {
+                Product product = productRepository.findById(itemDTO.getProductId()).orElseThrow(() -> new ResourceNotFoundException("Product not found with ID: " + itemDTO.getProductId()));
+                SupplierOrderItem item = SupplierOrderItem
+                        .builder()
+                        .supplierOrder(existing)
+                        .unitPrice(itemDTO.getUnitPrice())
+                        .quantity(itemDTO.getQuantity())
+                        .product(product)
+                        .build();
+                item.calculateTotalAmount();
+                existing.addItem(item);
+            }
+
+            existing.calculateTotalAmount();
+        }
+
+        SupplierOrder saved = supplierOrderRepository.save(existing);
+        return supplierOrderMapper.toDTO(saved);
+    }
 
 
 
@@ -177,7 +163,6 @@ public SupplierOrderResponseDTO updateOrder(Long id, SupplierOrderUpdateDTO dto)
 
         order.setStatus(OrderStatus.DELIVERED);
 
-        // Process stock entry with FIFO logic
         stockService.processStockEntry(order);
 
         SupplierOrder saved = supplierOrderRepository.save(order);
@@ -185,7 +170,6 @@ public SupplierOrderResponseDTO updateOrder(Long id, SupplierOrderUpdateDTO dto)
     }
 
 
-    @Transactional(Transactional.TxType.SUPPORTS)
     public List<SupplierOrderResponseDTO> getOrdersBySupplier(Long supplierId) {
         return supplierOrderRepository.findBySupplierId(supplierId)
                 .stream()
@@ -194,7 +178,6 @@ public SupplierOrderResponseDTO updateOrder(Long id, SupplierOrderUpdateDTO dto)
     }
 
 
-    @Transactional(Transactional.TxType.SUPPORTS)
     public List<SupplierOrderResponseDTO> getOrdersByStatus(OrderStatus status) {
         return supplierOrderRepository.findByStatus(status)
                 .stream()
@@ -202,7 +185,6 @@ public SupplierOrderResponseDTO updateOrder(Long id, SupplierOrderUpdateDTO dto)
                 .toList();
     }
 
-    @Transactional(Transactional.TxType.SUPPORTS)
     public List<SupplierOrderResponseDTO> getOrdersByDateRange(LocalDate start, LocalDate end) {
         return supplierOrderRepository.findByOrderDateBetween(start, end)
                 .stream()

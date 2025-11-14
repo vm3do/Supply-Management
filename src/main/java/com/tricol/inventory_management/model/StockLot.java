@@ -11,10 +11,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-/**
- * Represents a stock lot for FIFO tracking.
- * Each lot corresponds to a specific supplier order item entry.
- */
+
 @Entity
 @Table(name = "stock_lot")
 @Data

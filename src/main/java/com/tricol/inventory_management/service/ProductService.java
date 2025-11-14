@@ -64,12 +64,10 @@ public class ProductService {
         return productMapper.toDTO(product);
     }
 
-    @Transactional
     public ProductResponseDTO updateProduct(Long id, ProductUpdateRequestDTO dto) {
         Product existing = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product with id " + id + " does not exist"));
 
-        // if reference changed, ensure uniqueness
         if (!existing.getReference().equals(dto.getReference())) {
             Optional<Product> byRef = productRepository.findByReference(dto.getReference());
             if (byRef.isPresent() && !byRef.get().getId().equals(id)) {
@@ -77,7 +75,6 @@ public class ProductService {
             }
         }
 
-        // update entity using MapStruct update method
         productMapper.updateEntity(dto, existing);
 
         try {
@@ -88,7 +85,6 @@ public class ProductService {
         }
     }
 
-    @Transactional
     public void deleteProduct(Long id) {
         Product existing = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product with id " + id + " does not exist"));

@@ -4,10 +4,10 @@ import com.tricol.inventory_management.enums.MovementType;
 import com.tricol.inventory_management.model.*;
 import com.tricol.inventory_management.repository.StockLotRepository;
 import com.tricol.inventory_management.repository.StockMovementRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -76,21 +76,6 @@ public class StockService {
         }
 
         return lotNumber;
-    }
-
-    public int getAvailableStock(Product product) {
-        List<StockLot> lots = stockLotRepository.findByProduct(product);
-        return lots.stream()
-                .mapToInt(StockLot::getRemainingQuantity)
-                .sum();
-    }
-
-    public List<StockLot> getAvailableLotsFIFO(Long productId) {
-        return stockLotRepository.findAvailableLotsByProductOrderByEntryDate(productId);
-    }
-
-    public List<StockMovement> getProductMovements(Product product) {
-        return stockMovementRepository.findByProductOrderByMovementDateDesc(product);
     }
 
     public List<StockMovement> getAllMovements() {
