@@ -11,6 +11,7 @@ import com.tricol.Tricol.service.StockService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -25,27 +26,33 @@ public class ProductController {
     private final StockMapper stockMapper;
 
     @GetMapping
+    @PreAuthorize("hasAuthority('VIEW_PRODUCT')")
     public ResponseEntity<List<ProductResponseDTO>> getAllProducts() {
         return ResponseEntity.ok().body(productService.findAllProducts());
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('VIEW_PRODUCT')")
     public ResponseEntity<ProductResponseDTO> getProductById(@PathVariable Long id){
         return ResponseEntity.ok(productService.findById(id));
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('CREATE_PRODUCT')")
     public ResponseEntity<ProductResponseDTO> ProductCreate(@RequestBody ProductCreateRequestDTO request){
         ProductResponseDTO savedProduct = productService.createProduct(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedProduct);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('DELETE_PRODUCT')")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id){
         productService.deleteProduct(id);
         return ResponseEntity.noContent().build();
     }
+    
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('UPDATE_PRODUCT')")
     public ResponseEntity<ProductResponseDTO> updateProduct(
             @PathVariable Long id,
             @RequestBody ProductUpdateRequestDTO request) {
@@ -53,6 +60,7 @@ public class ProductController {
     }
 
     @GetMapping("/{id}/stock")
+    @PreAuthorize("hasAuthority('VIEW_STOCK')")
     public ResponseEntity<StockResponseDTO> getProductStock(@PathVariable Long id) {
         Product product = productService.findEntityById(id);
         Integer currentStock = stockService.getCurrentStock(id);

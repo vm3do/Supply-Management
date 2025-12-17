@@ -1,374 +1,415 @@
-# Inventory Management API Documentation
+# Tricol API Documentation - Security Endpoints
 
 ## Base URL
 ```
 http://localhost:8080
 ```
 
-## Products API
+---
 
-### GET /api/products
-Get all products
-- **Response**: Array of ProductResponseDTO
+## Authentication Endpoints
 
-### GET /api/products/{id}
-Get product by ID
-- **Response**: ProductResponseDTO
+### 1. Register User
+**POST** `/api/auth/register`
 
-### POST /api/products
-Create new product
-- **Request Body**:
+**Request Body:**
 ```json
 {
-  "reference": "PROD-001",
-  "name": "Product Name",
-  "description": "Product description",
-  "unitPrice": 25.50,
-  "category": "Electronics",
-  "reorderPoint": 10,
-  "unit": "pieces"
+  "email": "amine@tricol.com",
+  "password": "password123",
+  "fullName": "Amine Benali"
 }
 ```
 
-### PUT /api/products/{id}
-Update product
-- **Request Body**:
+**Response:** `200 OK`
 ```json
-{
-  "reference": "PROD-001-UPDATED",
-  "name": "Updated Product Name",
-  "description": "Updated description",
-  "unitPrice": 30.00,
-  "category": "Electronics",
-  "reorderPoint": 15,
-  "unit": "pieces"
-}
+"User registered successfully"
 ```
-
-### DELETE /api/products/{id}
-Delete product
-
-### GET /api/products/{id}/stock
-Get product stock information
-- **Response**: StockResponseDTO
 
 ---
 
-## Suppliers API
+### 2. Login
+**POST** `/api/auth/login`
 
-### GET /api/suppliers
-Get all suppliers
-- **Response**: Array of SupplierResponseDTO
-
-### GET /api/suppliers/{id}
-Get supplier by ID
-- **Response**: SupplierResponseDTO
-
-### POST /api/suppliers
-Create new supplier
-- **Request Body**:
+**Request Body:**
 ```json
 {
-  "name": "Supplier Name",
-  "ice": "123456789",
-  "email": "supplier@example.com",
-  "phone": "+1234567890",
-  "address": "123 Supplier Street, City, Country"
+  "email": "amine@tricol.com",
+  "password": "password123"
 }
 ```
 
-### PUT /api/suppliers/{id}
-Update supplier
-- **Request Body**:
+**Response:** `200 OK`
 ```json
 {
-  "name": "Updated Supplier Name",
-  "ice": "123456789",
-  "email": "updated@example.com",
-  "phone": "+1234567890",
-  "address": "456 Updated Street, City, Country"
+  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "tokenType": "Bearer"
 }
 ```
-
-### DELETE /api/suppliers/{id}
-Delete supplier
 
 ---
 
-## Supplier Orders API
+## Admin Endpoints (Requires MANAGE_USERS permission)
 
-### GET /api/orders
-Get all orders
-- **Response**: Array of SupplierOrderResponseDTO
+### 3. Assign Role to User
+**POST** `/api/admin/users/assign-role`
 
-### GET /api/orders/{id}
-Get order by ID
-- **Response**: SupplierOrderResponseDTO
+**Headers:**
+```
+Authorization: Bearer <admin-access-token>
+```
 
-### POST /api/orders
-Create new order
-- **Request Body**:
+**Request Body:**
 ```json
 {
-  "supplierId": 1,
-  "orderDate": "2024-01-15",
-  "items": [
-    {
-      "productId": 1,
-      "quantity": 100,
-      "unitPrice": 25.50
-    },
-    {
-      "productId": 2,
-      "quantity": 50,
-      "unitPrice": 15.75
+  "userId": 1,
+  "roleName": "MAGASINIER"
+}
+```
+
+**Response:** `200 OK`
+```json
+"Role assigned successfully"
+```
+
+---
+
+### 4. Override User Permission
+**POST** `/api/admin/users/permission-override`
+
+**Headers:**
+```
+Authorization: Bearer <admin-access-token>
+```
+
+**Request Body (Revoke):**
+```json
+{
+  "userId": 1,
+  "permissionName": "CREATE_BON_SORTIE",
+  "granted": false,
+  "reason": "Training period restriction"
+}
+```
+
+**Request Body (Grant):**
+```json
+{
+  "userId": 2,
+  "permissionName": "VIEW_AUDIT_LOGS",
+  "granted": true,
+  "reason": "Compliance review access"
+}
+```
+
+**Response:** `200 OK`
+```json
+"Permission override applied successfully"
+```
+
+---
+
+### 5. Get All Users
+**GET** `/api/admin/users`
+
+**Headers:**
+```
+Authorization: Bearer <admin-access-token>
+```
+
+**Response:** `200 OK`
+```json
+[
+  {
+    "id": 1,
+    "email": "amine@tricol.com",
+    "fullName": "Amine Benali",
+    "enabled": true,
+    "locked": false,
+    "role": {
+      "id": 3,
+      "name": "MAGASINIER"
     }
-  ]
-}
-```
-
-### PUT /api/orders/{id}
-Update order
-- **Request Body**:
-```json
-{
-  "orderDate": "2024-01-16",
-  "status": "PENDING",
-  "items": [
-    {
-      "productId": 1,
-      "quantity": 120,
-      "unitPrice": 25.50
-    }
-  ]
-}
-```
-
-### PUT /api/orders/{id}/validate
-Validate order (no request body)
-
-### PUT /api/orders/{id}/receive
-Receive order and process stock entry (no request body)
-
-### DELETE /api/orders/{id}
-Delete order
-
-### GET /api/orders/supplier/{supplierId}
-Get orders by supplier
-- **Response**: Array of SupplierOrderResponseDTO
-
----
-
-## Stock Management API
-
-### GET /api/stock
-Get stock summary dashboard
-- **Response**: StockSummaryResponseDTO
-
-### GET /api/stock/product/{productId}
-Get stock for specific product
-- **Response**: StockResponseDTO
-
-### GET /api/stock/movements
-Get all stock movements
-- **Response**: Array of StockMovementResponseDTO
-
-### GET /api/stock/movements/product/{productId}
-Get stock movements for specific product
-- **Response**: Array of StockMovementResponseDTO
-
-### GET /api/stock/alerts
-Get low stock alerts
-- **Response**: Array of ProductResponseDTO
-
-### GET /api/stock/valuation
-Get total inventory valuation
-- **Response**: 
-```json
-{
-  "totalValue": 125000.50
-}
+  }
+]
 ```
 
 ---
 
-## Stock Outbound API
+### 6. Get All Roles
+**GET** `/api/admin/roles`
 
-### GET /api/stock-outbound
-Get all stock outbounds
-- **Response**: Array of StockOutboundResponseDTO
-
-### GET /api/stock-outbound/{id}
-Get stock outbound by ID
-- **Response**: StockOutboundResponseDTO
-
-### POST /api/stock-outbound
-Create new stock outbound
-- **Request Body**:
-```json
-{
-  "reason": "PRODUCTION",
-  "workshop": "Workshop A",
-  "notes": "Materials for production order #123",
-  "items": [
-    {
-      "productId": 1,
-      "quantity": 50,
-      "notes": "For assembly line 1"
-    },
-    {
-      "productId": 2,
-      "quantity": 25,
-      "notes": "For assembly line 2"
-    }
-  ]
-}
+**Headers:**
+```
+Authorization: Bearer <admin-access-token>
 ```
 
-### PUT /api/stock-outbound/{id}
-Update stock outbound (only DRAFT status)
-- **Request Body**:
+**Response:** `200 OK`
 ```json
-{
-  "reason": "MAINTENANCE",
-  "workshop": "Workshop B",
-  "notes": "Updated notes for maintenance"
-}
-```
-
-### PUT /api/stock-outbound/{id}/validate
-Validate and process stock outbound (no request body)
-
-### PUT /api/stock-outbound/{id}/cancel
-Cancel stock outbound (no request body)
-
-### GET /api/stock-outbound/workshop/{workshop}
-Get stock outbounds by workshop
-- **Response**: Array of StockOutboundResponseDTO
-
----
-
-## Response DTOs
-
-### ProductResponseDTO
-```json
-{
-  "id": 1,
-  "reference": "PROD-001",
-  "name": "Product Name",
-  "description": "Product description",
-  "unitPrice": 25.50,
-  "category": "Electronics",
-  "reorderPoint": 10,
-  "unit": "pieces",
-  "createdAt": "2024-01-15T10:30:00",
-  "updatedAt": "2024-01-15T10:30:00"
-}
-```
-
-### StockResponseDTO
-```json
-{
-  "productId": 1,
-  "productReference": "PROD-001",
-  "productName": "Product Name",
-  "currentStock": 150,
-  "stockValue": 3825.00,
-  "reorderPoint": 10,
-  "isLowStock": false
-}
-```
-
-### StockSummaryResponseDTO
-```json
-{
-  "stocks": [
-    {
-      "productId": 1,
-      "productReference": "PROD-001",
-      "productName": "Product Name",
-      "currentStock": 150,
-      "stockValue": 3825.00,
-      "reorderPoint": 10,
-      "isLowStock": false
-    }
-  ],
-  "totalValue": 125000.50,
-  "alerts": [],
-  "totalProducts": 25,
-  "lowStockCount": 0
-}
-```
-
-### StockOutboundResponseDTO
-```json
-{
-  "id": 1,
-  "reference": "OUT-20240115-001",
-  "reason": "PRODUCTION",
-  "status": "DRAFT",
-  "workshop": "Workshop A",
-  "notes": "Materials for production",
-  "items": [
-    {
-      "id": 1,
-      "productId": 1,
-      "productReference": "PROD-001",
-      "productName": "Product Name",
-      "quantity": 50,
-      "notes": "For assembly line 1"
-    }
-  ],
-  "createdAt": "2024-01-15T10:30:00",
-  "updatedAt": "2024-01-15T10:30:00"
-}
+[
+  {
+    "id": 1,
+    "name": "ADMIN"
+  },
+  {
+    "id": 2,
+    "name": "RESPONSABLE_ACHATS"
+  },
+  {
+    "id": 3,
+    "name": "MAGASINIER"
+  },
+  {
+    "id": 4,
+    "name": "CHEF_ATELIER"
+  }
+]
 ```
 
 ---
 
-## Enums
+### 7. Get All Permissions
+**GET** `/api/admin/permissions`
 
-### OutboundReason
-- `PRODUCTION`
-- `MAINTENANCE` 
-- `OTHER`
+**Headers:**
+```
+Authorization: Bearer <admin-access-token>
+```
 
-### OutboundStatus
-- `DRAFT`
-- `VALIDATED`
-- `CANCELLED`
+**Response:** `200 OK`
+```json
+[
+  {
+    "id": 1,
+    "name": "CREATE_SUPPLIER",
+    "resource": "SUPPLIER",
+    "action": "CREATE"
+  },
+  {
+    "id": 2,
+    "name": "VIEW_SUPPLIER",
+    "resource": "SUPPLIER",
+    "action": "VIEW"
+  }
+]
+```
 
-### OrderStatus
-- `PENDING`
-- `VALIDATED`
-- `DELIVERED`
+---
 
-### MovementType
-- `ENTREE` (Stock In)
-- `SORTIE` (Stock Out)
+## Protected Business Endpoints (Examples)
+
+### 8. Get All Products
+**GET** `/api/products`
+
+**Required Permission:** `VIEW_PRODUCT`
+
+**Headers:**
+```
+Authorization: Bearer <access-token>
+```
+
+---
+
+### 9. Create Product
+**POST** `/api/products`
+
+**Required Permission:** `CREATE_PRODUCT`
+
+**Headers:**
+```
+Authorization: Bearer <access-token>
+```
+
+---
+
+### 10. Get All Suppliers
+**GET** `/api/suppliers`
+
+**Required Permission:** `VIEW_SUPPLIER`
+
+**Headers:**
+```
+Authorization: Bearer <access-token>
+```
+
+---
+
+### 11. Create Supplier
+**POST** `/api/suppliers`
+
+**Required Permission:** `CREATE_SUPPLIER`
+
+**Headers:**
+```
+Authorization: Bearer <access-token>
+```
+
+---
+
+### 12. Validate Order
+**PUT** `/api/orders/{id}/validate`
+
+**Required Permission:** `VALIDATE_ORDER`
+
+**Headers:**
+```
+Authorization: Bearer <access-token>
+```
+
+---
+
+### 13. Receive Order
+**PUT** `/api/orders/{id}/receive`
+
+**Required Permission:** `RECEIVE_ORDER`
+
+**Headers:**
+```
+Authorization: Bearer <access-token>
+```
+
+---
+
+### 14. Create Bon de Sortie
+**POST** `/api/stock-outbound`
+
+**Required Permission:** `CREATE_BON_SORTIE`
+
+**Headers:**
+```
+Authorization: Bearer <access-token>
+```
+
+---
+
+### 15. Validate Bon de Sortie
+**PUT** `/api/stock-outbound/{id}/validate`
+
+**Required Permission:** `VALIDATE_BON_SORTIE`
+
+**Headers:**
+```
+Authorization: Bearer <access-token>
+```
+
+---
+
+## Permission Matrix
+
+| Role | Permissions |
+|------|-------------|
+| **ADMIN** | All permissions |
+| **RESPONSABLE_ACHATS** | CREATE_SUPPLIER, UPDATE_SUPPLIER, DELETE_SUPPLIER, VIEW_SUPPLIER, CREATE_PRODUCT, UPDATE_PRODUCT, DELETE_PRODUCT, VIEW_PRODUCT, CONFIGURE_PRODUCT_THRESHOLD, CREATE_ORDER, UPDATE_ORDER, VALIDATE_ORDER, CANCEL_ORDER, VIEW_ORDER, VIEW_STOCK, VIEW_STOCK_VALUATION, VIEW_STOCK_HISTORY, VIEW_BON_SORTIE |
+| **MAGASINIER** | VIEW_SUPPLIER, VIEW_PRODUCT, RECEIVE_ORDER, VIEW_ORDER, VIEW_STOCK, VIEW_STOCK_VALUATION, VIEW_STOCK_HISTORY, CREATE_BON_SORTIE, VALIDATE_BON_SORTIE, CANCEL_BON_SORTIE, VIEW_BON_SORTIE |
+| **CHEF_ATELIER** | VIEW_PRODUCT, VIEW_STOCK, VIEW_STOCK_HISTORY, CREATE_BON_SORTIE, VIEW_BON_SORTIE |
 
 ---
 
 ## Error Responses
 
-### 404 Not Found
+### 401 Unauthorized
 ```json
 {
-  "timestamp": "2024-01-15T10:30:00",
-  "status": 404,
-  "error": "Not Found",
-  "message": "Product not found with id: 999",
-  "path": "/api/products/999"
+  "error": "Unauthorized",
+  "message": "Full authentication is required to access this resource"
+}
+```
+
+### 403 Forbidden
+```json
+{
+  "error": "Forbidden",
+  "message": "Access Denied"
 }
 ```
 
 ### 400 Bad Request
 ```json
 {
-  "timestamp": "2024-01-15T10:30:00",
-  "status": 400,
   "error": "Bad Request",
-  "message": "Insufficient stock for product: PROD-001",
-  "path": "/api/stock-outbound/1/validate"
+  "message": "Email already exists"
 }
 ```
+
+---
+
+## Testing Flow
+
+### Step 1: Register Admin User
+```bash
+POST /api/auth/register
+{
+  "email": "admin@tricol.com",
+  "password": "admin123",
+  "fullName": "Admin User"
+}
+```
+
+### Step 2: Manually Assign ADMIN Role (Database)
+```sql
+UPDATE users SET role_id = 1 WHERE email = 'admin@tricol.com';
+```
+
+### Step 3: Login as Admin
+```bash
+POST /api/auth/login
+{
+  "email": "admin@tricol.com",
+  "password": "admin123"
+}
+```
+
+### Step 4: Register Regular User
+```bash
+POST /api/auth/register
+{
+  "email": "amine@tricol.com",
+  "password": "password123",
+  "fullName": "Amine Benali"
+}
+```
+
+### Step 5: Assign Role (As Admin)
+```bash
+POST /api/admin/users/assign-role
+Authorization: Bearer <admin-token>
+{
+  "userId": 2,
+  "roleName": "MAGASINIER"
+}
+```
+
+### Step 6: Login as Regular User
+```bash
+POST /api/auth/login
+{
+  "email": "amine@tricol.com",
+  "password": "password123"
+}
+```
+
+### Step 7: Test Protected Endpoint
+```bash
+GET /api/products
+Authorization: Bearer <amine-token>
+```
+
+### Step 8: Override Permission (As Admin)
+```bash
+POST /api/admin/users/permission-override
+Authorization: Bearer <admin-token>
+{
+  "userId": 2,
+  "permissionName": "CREATE_BON_SORTIE",
+  "granted": false,
+  "reason": "Training period"
+}
+```
+
+### Step 9: Test After Override
+```bash
+POST /api/stock-outbound
+Authorization: Bearer <amine-token>
+```
+**Expected:** 403 Forbidden (permission revoked)
