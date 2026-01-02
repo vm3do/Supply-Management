@@ -19,27 +19,27 @@ public class SupplierOrderItemController {
         this.service = service;
     }
 
-    @GetMapping("/api/v1/supplier-order-items/{id}")
+    @GetMapping("/api/supplier-order-items/{id}")
     public ResponseEntity<SupplierOrderItemResponseDTO> getById(@PathVariable Long id) {
         return ResponseEntity.ok(service.getItemById(id));
     }
 
-    @GetMapping("/api/v1/supplier-orders/{orderId}/items")
+    @GetMapping("/api/supplier-orders/{orderId}/items")
     public ResponseEntity<List<SupplierOrderItemResponseDTO>> getItemsByOrder(@PathVariable Long orderId) {
         return ResponseEntity.ok(service.getItemsByOrder(orderId));
     }
 
-    @PostMapping("/api/v1/supplier-orders/{orderId}/items")
+    @PostMapping("/api/supplier-orders/{orderId}/items")
     public ResponseEntity<SupplierOrderItemResponseDTO> create(@PathVariable Long orderId, @Valid @RequestBody SupplierOrderItemRequestDTO request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.createItem(orderId, request));
     }
 
-    @PutMapping("/api/v1/supplier-order-items/{id}")
+    @PutMapping("/api/supplier-order-items/{id}")
     public ResponseEntity<SupplierOrderItemResponseDTO> update(@PathVariable Long id, @Valid @RequestBody SupplierOrderItemUpdateDTO request) {
         return ResponseEntity.ok(service.updateItem(id, request));
     }
 
-    @DeleteMapping("/api/v1/supplier-order-items/{id}")
+    @DeleteMapping("/api/supplier-order-items/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.deleteItem(id);
         return ResponseEntity.noContent().build();

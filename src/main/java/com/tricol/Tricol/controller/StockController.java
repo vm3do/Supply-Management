@@ -22,7 +22,7 @@ import com.tricol.Tricol.enums.MovementType;
 
 
 @RestController
-@RequestMapping("/api/v1/stock")
+@RequestMapping("/api/stock")
 @RequiredArgsConstructor
 public class StockController {
 
